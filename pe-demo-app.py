@@ -96,3 +96,12 @@ if page == 3:
 
 if page == 4:
     make_skymap(chosenlist)
+
+st.markdown("## About this app")
+
+st.markdown("""
+
+This app displays data from LIGO, Virgo, and GEO downloaded from the Gravitational Wave Open Science Center at https://gw-openscience.org .
+
+[See the code](https://github.com/jkanner/streamlit-pe-demo)
+""")
