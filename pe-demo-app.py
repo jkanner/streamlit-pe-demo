@@ -29,9 +29,10 @@ page = st.radio('Select Section:', [1,2,3,4], format_func=headerlabel)
 st.markdown("## {}".format(headerlabel(page)))
 
 st.sidebar.markdown("### Select events")
-eventlist = get_eventlist(catalog='GWTC-2', optional=False)
+eventlist = get_eventlist(catalog=['GWTC-2', 'GWTC-1-confident'],
+                          optional=False)
 ev1 = st.sidebar.selectbox('Event 1', eventlist)
-eventlist2 = get_eventlist(catalog='GWTC-2', optional=True)
+eventlist2 = get_eventlist(catalog=['GWTC-2'], optional=True)
 ev2 = st.sidebar.selectbox('Event 2', eventlist2)    
 ev3 = st.sidebar.selectbox('Event 3', eventlist2)
 chosenlist = [ev1, ev2, ev3]
@@ -49,7 +50,13 @@ if page == 1:
         data_load_state.text('Loading event ... {0}'.format(i))
         if chosen is None: continue
         samples = load_samples(chosen)
-        sample_dict[chosen] = samples.samples_dict['PublicationSamples']
+        try:
+            #-- GWTC-2
+            sample_dict[chosen] = samples.samples_dict['PublicationSamples']
+        except:
+            #-- GWTC-1
+            sample_dict[chosen] = samples.samples_dict
+                
     data_load_state.text('Loading event ... done'.format(i))
     published_dict = pesummary.utils.samples_dict.MultiAnalysisSamplesDict( sample_dict )
 
