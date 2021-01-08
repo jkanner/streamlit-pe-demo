@@ -36,21 +36,13 @@ def make_altair_plots(chosenlist):
     for ev in chosenlist:
         if ev is None: continue
         st.markdown(ev)
-        
-    sample_dict = {}
-    data_load_state = st.text('Loading data...')
-    for i,chosen in enumerate(chosenlist, 1):
-        data_load_state.text('Loading event ... {0}'.format(i))
-        if chosen is None: continue
-        samples = load_samples(chosen)
-        sample_dict[chosen] = samples.samples_dict['PublicationSamples']
 
-    data_load_state.text('Loading event ... done'.format(i))
-    published_dict = pesummary.utils.samples_dict.MultiAnalysisSamplesDict( sample_dict )
-
+    sample_dict = load_multiple_events(chosenlist)
+ 
     # -- Color list
     colorlist = ['blue', 'red', 'green']
 
+    # -- Get parameters present in all selected events
     allparams = get_params_intersect(sample_dict, chosenlist)
     
     # -- Loop over parameters

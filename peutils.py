@@ -14,6 +14,7 @@ from gwosc.api import fetch_event_json
 from copy import deepcopy
 import base64
 
+import pesummary
 from pesummary.io import read
 
 
@@ -54,6 +55,27 @@ def load_samples_old(event):
     samples = read(fn)
     return samples
 
+
+# -- Assemble samples into sample dictionary
+def load_multiple_events(chosenlist):
+    sample_dict = {}
+    data_load_state = st.text('Loading data...')
+    for i,chosen in enumerate(chosenlist, 1):
+        data_load_state.text('Loading event ... {0}'.format(i))
+        if chosen is None: continue
+        samples = load_samples(chosen)
+        try:
+            #-- GWTC-2
+            sample_dict[chosen] = samples.samples_dict['PublicationSamples']
+        except:
+            #-- GWTC-1
+            sample_dict[chosen] = samples.samples_dict
+            
+    data_load_state.text('Loading event ... done'.format(i))
+    published_dict = pesummary.utils.samples_dict.MultiAnalysisSamplesDict( sample_dict )
+    return published_dict
+
+
 # -- Load PE samples from web
 @st.cache
 def load_samples(event, waveform=False):
@@ -75,7 +97,10 @@ def load_samples(event, waveform=False):
         r = requests.get(url)
         tfile = tempfile.NamedTemporaryFile(suffix='.h5')
         tfile.write(r.content)
-        samples = read(tfile.name)
+        if event == 'GW170817':
+            samples = read(tfile.name, path_to_samples="IMRPhenomPv2NRT_lowSpin_posterior")
+        else:
+            samples = read(tfile.name)
 
 
     return samples
