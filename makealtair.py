@@ -32,6 +32,11 @@ def get_params_intersect(sample_dict, chosenlist):
         
 def make_altair_plots(chosenlist):
 
+    st.markdown("""
+    This page will show 1-D posterior plots for any parameters available for all selected events.
+    See the pesummary docs for [definitions of standard parameters](https://lscsoft.docs.ligo.org/pesummary/unstable_docs/gw/parameters.html)
+    """)
+    
     st.markdown("### Showing parameters for events:")
     for ev in chosenlist:
         if ev is None: continue
