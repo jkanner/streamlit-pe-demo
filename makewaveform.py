@@ -297,4 +297,3 @@ def plot_gwtc1_waveform(name):
         hp_gwpy = gwpy.timeseries.TimeSeries(hp.data, times=hp.sample_times)
         st.audio(make_audio_file(hp_gwpy))
     
-
