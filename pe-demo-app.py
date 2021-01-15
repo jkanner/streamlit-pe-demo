@@ -2,16 +2,16 @@ import streamlit as st
 import pesummary
 from pesummary.io import read
 from peutils import *
-from makewaveform import make_waveform
+from makewaveform import make_waveform, plot_gwtc1_waveform
 from makealtair import make_altair_plots, get_params_intersect
 from makeskymap import make_skymap
+from copy import deepcopy
 
 import matplotlib
 matplotlib.use('Agg')
 
 from matplotlib.backends.backend_agg import RendererAgg
 lock = RendererAgg.lock
-
 
 st.title('PE demo')
 
@@ -28,13 +28,20 @@ def headerlabel(number):
 page = st.radio('Select Section:', [1,2,3,4], format_func=headerlabel)
 st.markdown("## {}".format(headerlabel(page)))
 
+# -- Query GWOSC for GWTC events
+eventlist = get_eventlist(catalog=['GWTC-2', 'GWTC-1-confident'],
+                          optional=False)
+
+# -- 2nd and 3rd events are optional, so include "None" option
+eventlist2 = deepcopy(eventlist)
+eventlist2.insert(0,None)    
+
 st.sidebar.markdown("### Select events")
-eventlist = get_eventlist(catalog='GWTC-2', optional=False)
 ev1 = st.sidebar.selectbox('Event 1', eventlist)
-eventlist2 = get_eventlist(catalog='GWTC-2', optional=True)
 ev2 = st.sidebar.selectbox('Event 2', eventlist2)    
 ev3 = st.sidebar.selectbox('Event 3', eventlist2)
-chosenlist = [ev1, ev2, ev3]
+x = [ev1, ev2, ev3]
+chosenlist = list(filter(lambda a: a != None, x))
 
 if page == 1:
 
@@ -42,24 +49,17 @@ if page == 1:
     for ev in chosenlist:
         if ev is None: continue
         st.markdown(ev)
-    
-    sample_dict = {}
-    data_load_state = st.text('Loading data...')
-    for i,chosen in enumerate(chosenlist, 1):
-        data_load_state.text('Loading event ... {0}'.format(i))
-        if chosen is None: continue
-        samples = load_samples(chosen)
-        sample_dict[chosen] = samples.samples_dict['PublicationSamples']
-    data_load_state.text('Loading event ... done'.format(i))
-    published_dict = pesummary.utils.samples_dict.MultiAnalysisSamplesDict( sample_dict )
+
+    # -- Load PE samples for all events into a pesummary object
+    published_dict = load_multiple_events(chosenlist)
 
     # -- Select parameters to plot
     st.markdown("## Select parameters to plot")
-    params = get_params_intersect(sample_dict, chosenlist)
+    params = get_params_intersect(published_dict, chosenlist)
 
     try:
-        indx1 = params.index('mass_1_source')
-        indx2 = params.index('mass_2_source')
+        indx1 = params.index('mass_1')
+        indx2 = params.index('mass_2')
     except:
         indx1 = 0
         indx2 = 1
@@ -75,24 +75,25 @@ if page == 1:
                                   grid=False)
         st.pyplot(fig[0])
 
-    st.markdown("### {0}".format(param1))
 
-    with lock:
-        fig = published_dict.plot(param1, type='hist', kde=True)
-        st.pyplot(fig)
-
-    st.markdown("### {0}".format(param2))
-
-    with lock:
-        fig = published_dict.plot(param2, type='hist', kde=True)
-        st.pyplot(fig)
+    for param in [param1, param2]:
+        st.markdown("### {0}".format(param))
+        with lock:
+            fig = published_dict.plot(param, type='hist', kde=True)                # -- pesummary v0.9.1
+            # fig = published_dict.plot(param, type='hist', kde=True, module='gw') #-- pesummary v 0.11.0
+            st.pyplot(fig)
 
 if page == 2:    
     make_altair_plots(chosenlist)
 
 if page == 3:
+
     st.markdown("### Making waveform for Event 1: {0}".format(ev1))
-    make_waveform(ev1)
+    if int(ev1[2:4]) < 18:  # -- Kludge to find events before 2018
+        st.markdown("Found GWTC-1 Event")
+        plot_gwtc1_waveform(ev1)
+    else:
+        make_waveform(ev1)
 
 if page == 4:
     make_skymap(chosenlist)

@@ -14,6 +14,7 @@ from gwosc.api import fetch_event_json
 from copy import deepcopy
 import base64
 
+import pesummary
 from pesummary.io import read
 
 
@@ -31,12 +32,17 @@ lock = RendererAgg.lock
 @st.cache
 def get_eventlist(catalog=None, optional=False):
 
-    # -- Get list of events
-    # find_datasets(catalog='GWTC-1-confident',type='events')
-    eventlist = datasets.find_datasets(type='events', catalog=catalog)
-    eventlist = [name.split('-')[0] for name in eventlist if name[0:2] == 'GW']
-    eventset = set([name for name in eventlist])
-    eventlist = list(eventset)
+    allevents = set()
+    
+    for cat in catalog:
+        # -- Get list of events
+        # find_datasets(catalog='GWTC-1-confident',type='events')
+        eventlist = datasets.find_datasets(type='events', catalog=cat)
+        eventlist = [name.split('-')[0] for name in eventlist if name[0:2] == 'GW']
+        eventset = set([name for name in eventlist])
+        allevents = allevents.union(eventset)
+        
+    eventlist = list(allevents)
     eventlist.sort()
     if optional:
         eventlist.insert(0,None)    
@@ -49,6 +55,27 @@ def load_samples_old(event):
     samples = read(fn)
     return samples
 
+
+# -- Assemble samples into sample dictionary
+def load_multiple_events(chosenlist):
+    sample_dict = {}
+    data_load_state = st.text('Loading data...')
+    for i,chosen in enumerate(chosenlist, 1):
+        data_load_state.text('Loading event ... {0}'.format(i))
+        if chosen is None: continue
+        samples = load_samples(chosen)
+        try:
+            #-- GWTC-2
+            sample_dict[chosen] = samples.samples_dict['PublicationSamples']
+        except:
+            #-- GWTC-1
+            sample_dict[chosen] = samples.samples_dict
+            
+    data_load_state.text('Loading event ... done'.format(i))
+    published_dict = pesummary.utils.samples_dict.MultiAnalysisSamplesDict( sample_dict )
+    return published_dict
+
+
 # -- Load PE samples from web
 @st.cache
 def load_samples(event, waveform=False):
@@ -60,10 +87,22 @@ def load_samples(event, waveform=False):
         
     url = 'https://labcit.ligo.caltech.edu/~jkanner/demo/pe/small-pe-gwtc2/{0}'.format(fn)
 
-    r = requests.get(url)
-    tfile = tempfile.NamedTemporaryFile(suffix='.h5')
-    tfile.write(r.content)
-    samples = read(tfile.name)
+    try: 
+        r = requests.get(url)
+        tfile = tempfile.NamedTemporaryFile(suffix='.h5')
+        tfile.write(r.content)
+        samples = read(tfile.name)
+    except:
+        url = 'https://dcc.ligo.org/public/0157/P1800370/005/{0}_GWTC-1.hdf5'.format(event)
+        r = requests.get(url)
+        tfile = tempfile.NamedTemporaryFile(suffix='.h5')
+        tfile.write(r.content)
+        if event == 'GW170817':
+            samples = read(tfile.name, path_to_samples="IMRPhenomPv2NRT_lowSpin_posterior")
+        else:
+            samples = read(tfile.name)
+
+
     return samples
 
 

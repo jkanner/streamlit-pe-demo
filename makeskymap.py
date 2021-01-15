@@ -12,12 +12,26 @@ lock = RendererAgg.lock
 def make_skymap(chosenlist):
 
     for ev in chosenlist:
-
-        if ev is None: continue
-        
         st.markdown("### Skymap for {0}".format(ev))        
-        data = load_samples(ev)
-        with lock:
-            fig = data.skymap['PublicationSamples'].plot(contour=[50, 90])
-            st.pyplot(fig[0])
+        # if ev is None: continue
+
+        if int(ev[2:4]) < 18:
+
+            #-- GWTC-1
+            from matplotlib.figure import Figure
+            url = 'https://dcc.ligo.org/public/0157/P1800381/007/{0}_skymap.fits.gz'.format(ev)
+            
+            with lock:
+                fig = Figure()
+                #ax = fig.subplots(subplot_kw={'projection': 'geo aitoff'})
+                ax = fig.subplots(subplot_kw={'projection': 'astro hours mollweide'})    
+                ax.imshow_hpx(url, cmap='cylon')
+                st.pyplot(fig)
+
+        else:
+            # -- GWTC-2
+            data = load_samples(ev)
+            with lock:
+                fig = data.skymap['PublicationSamples'].plot(contour=[50, 90])
+                st.pyplot(fig[0])
         
