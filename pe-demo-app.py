@@ -2,7 +2,7 @@ import streamlit as st
 import pesummary
 from pesummary.io import read
 from peutils import *
-from makewaveform import make_waveform
+from makewaveform import make_waveform, plot_gwtc1_waveform
 from makealtair import make_altair_plots, get_params_intersect
 from makeskymap import make_skymap
 from copy import deepcopy
@@ -40,7 +40,8 @@ st.sidebar.markdown("### Select events")
 ev1 = st.sidebar.selectbox('Event 1', eventlist)
 ev2 = st.sidebar.selectbox('Event 2', eventlist2)    
 ev3 = st.sidebar.selectbox('Event 3', eventlist2)
-chosenlist = [ev1, ev2, ev3]
+x = [ev1, ev2, ev3]
+chosenlist = list(filter(lambda a: a != None, x))
 
 if page == 1:
 
@@ -57,8 +58,8 @@ if page == 1:
     params = get_params_intersect(published_dict, chosenlist)
 
     try:
-        indx1 = params.index('mass_1_source')
-        indx2 = params.index('mass_2_source')
+        indx1 = params.index('mass_1')
+        indx2 = params.index('mass_2')
     except:
         indx1 = 0
         indx2 = 1
@@ -86,8 +87,13 @@ if page == 2:
     make_altair_plots(chosenlist)
 
 if page == 3:
+
     st.markdown("### Making waveform for Event 1: {0}".format(ev1))
-    make_waveform(ev1)
+    if int(ev1[2:4]) < 18:  # -- Kludge to find events before 2018
+        st.markdown("Found GWTC-1 Event")
+        plot_gwtc1_waveform(ev1)
+    else:
+        make_waveform(ev1)
 
 if page == 4:
     make_skymap(chosenlist)
