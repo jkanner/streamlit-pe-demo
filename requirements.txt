@@ -1,6 +1,6 @@
 numpy==1.19.1
-streamlit
-gwpy
-pycbc
+streamlit==0.76.0
+gwpy==2.0.2
+pycbc==1.17.1
 pesummary==0.9.1
 seaborn<=0.10.1
