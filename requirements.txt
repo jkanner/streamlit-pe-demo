@@ -4,6 +4,7 @@ gwpy==1.0.1
 matplotlib==3.3.0
 numpy
 pesummary==0.9.1
+ligo-segments==1.2.0
 pycbc==1.17.0
 seaborn<=0.10.1
 lalsuite==6.79      
