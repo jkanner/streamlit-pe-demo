@@ -1,10 +1,6 @@
-streamlit==0.70.0
-certifi
-gwpy==2.0.2
-matplotlib==3.2.2
+numpy==1.19.1
+streamlit
+gwpy
+pycbc
 pesummary==0.9.1
-ligo-segments==1.2.0
-pycbc==1.16.2
 seaborn<=0.10.1
-lalsuite==6.80      
-ligo.skymap==0.5.0
