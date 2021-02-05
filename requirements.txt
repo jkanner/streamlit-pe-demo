@@ -1,4 +1,3 @@
-numpy==1.16.6
 streamlit==0.70.0
 certifi
 gwpy==2.0.2
