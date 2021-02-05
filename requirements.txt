@@ -1,8 +1,8 @@
+numpy==1.19.4
 streamlit==0.70.0
 certifi
 gwpy==2.0.2
 matplotlib==3.2.2
-numpy==1.19.4
 pesummary==0.9.1
 ligo-segments==1.2.0
 pycbc==1.16.2
