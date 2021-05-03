@@ -296,4 +296,7 @@ def plot_gwtc1_waveform(name):
         plot_signal(hp)
         hp_gwpy = gwpy.timeseries.TimeSeries(hp.data, times=hp.sample_times)
         st.audio(make_audio_file(hp_gwpy))
-    
+
+        url = get_download_link(hp, filename="{0}_waveform.csv".format(name))
+        st.markdown(url, unsafe_allow_html=True)
+
