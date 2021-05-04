@@ -7,6 +7,8 @@ from makealtair import make_altair_plots, get_params_intersect
 from makeskymap import make_skymap
 from copy import deepcopy
 
+BAD
+
 import matplotlib
 matplotlib.use('Agg')
 
